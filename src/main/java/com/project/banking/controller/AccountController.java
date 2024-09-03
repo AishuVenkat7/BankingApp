@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -83,5 +84,28 @@ public class AccountController {
 		accountService.deleteAccount(id);
 		return "Account is Deleted Successfully";
 	}
+	
+	@GetMapping("/page/{pageNo}/{pageSize}")
+	public List<AccountDto> findPaginated(@PathVariable int pageNo, @PathVariable int pageSize) {
+		Page<AccountDto> accounts = accountService.findPaginated(pageNo, pageSize);
+		List<AccountDto> accountDto = accounts.getContent();
+		return accountDto;
+	}
+	
+	@GetMapping("/page/{pageNo}/sortField/{sortField}")
+	public Page<AccountDto> findPaginationAndSorting(@PathVariable int pageNo, @PathVariable String sortField,
+			@RequestParam(defaultValue = "5") int pageSize, @RequestParam(defaultValue = "asc") String sortDirection) {
+		
+		Page<AccountDto> accounts = accountService.findPaginationAndSorting(pageNo, pageSize, sortField, sortDirection);
+		return accounts;
+	}
+	
+	@GetMapping("/sortField/{sortField}/sortBy/{sortDirection}")
+	public List<AccountDto> findSorting(@PathVariable String sortField, @PathVariable String sortDirection) {
+		
+		return accountService.findSorting(sortField, sortDirection);
+		
+	}
+	
 
 }

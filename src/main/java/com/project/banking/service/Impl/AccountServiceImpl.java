@@ -1,15 +1,20 @@
-package com.project.banking.service;
+package com.project.banking.service.Impl;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.project.banking.dto.AccountDto;
 import com.project.banking.entity.Account;
 import com.project.banking.mapper.AccountMapper;
 import com.project.banking.repository.AccountRepository;
+import com.project.banking.service.AccountService;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -97,6 +102,34 @@ public class AccountServiceImpl implements AccountService {
 				   .map((account) -> AccountMapper.mapToAccountDto(account))
 				   .collect(Collectors.toList());
 		
+	}
+
+	@Override
+	public Page<AccountDto> findPaginated(int pageNo, int pageSize) {
+		Page<Account> accounts = accountRepository.findAll(PageRequest.of(pageNo - 1, pageSize));
+		Page<AccountDto> accountDtos = accounts.map(AccountMapper::mapToAccountDto);
+		return accountDtos;
+	}
+
+	@Override
+	public Page<AccountDto> findPaginationAndSorting(int pageNo, int pageSize, String sortField, String sortDirection) {
+		Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
+				Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+		
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
+		Page<Account> accounts = accountRepository.findAll(pageable);
+		Page<AccountDto> accountDtos = accounts.map(AccountMapper::mapToAccountDto);
+		return accountDtos;
+	}
+
+	@Override
+	public List<AccountDto> findSorting(String sortField, String sortDirection) {
+		Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
+				Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+		List<Account> accounts = accountRepository.findAll(sort);
+		return accounts.stream()
+				   .map((account) -> AccountMapper.mapToAccountDto(account))
+				   .collect(Collectors.toList());
 	}
 
 }
